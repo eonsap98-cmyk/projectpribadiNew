@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Balai Kesehatan Olahraga Masyarakat</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f1f5f9;
+        }
+        .modal {
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+            z-index: 50;
+        }
+        .modal:not(.is-open) {
+            opacity: 0;
+            visibility: hidden;
+        }
+        .is-open {
+            opacity: 1;
+            visibility: visible;
+        }
+        .tab-button {
+            color: #6b7280; /* gray-500 */
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s ease-in-out;
+        }
+        .tab-button:hover {
+            color: #374151; /* gray-700 */
+            border-color: #d1d5db; /* gray-300 */
+        }
+        .tab-button.active {
+            color: #2563eb; /* blue-600 */
+            border-color: #2563eb; /* blue-600 */
+        }
+        .tab-button.disabled {
+            color: #9ca3af;
+            cursor: not-allowed;
+            background-color: transparent !important;
+            border-color: transparent !important;
+        }
+        .tab-button.disabled:hover {
+            color: #9ca3af;
+            border-color: transparent;
+        }
+        .disabled-btn {
+            cursor: not-allowed;
+            background-color: #9ca3af;
+            opacity: 0.7;
+        }
+        .locker-item {
+            transition: transform 0.2s ease;
+        }
+        .locker-item:hover {
+            transform: translateY(-4px);
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <!-- Login Overlay --><div id="login-overlay" class="modal is-open fixed inset-0 bg-gray-900 bg-opacity-80 flex justify-center items-center p-4 z-[100]">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-sm p-8">
+            <div class="text-center mb-6">
+                 <h1 class="text-xl sm:text-2xl font-bold leading-tight">Balai Kesehatan Olahraga Masyarakat</h1>
+                 <p class="text-gray-500 mt-4">Silakan login untuk melanjutkan</p>
+            </div>
+            <form id="login-form">
+                <div class="mb-4">
+                    <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <input type="password" id="password" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" required placeholder="admin123">
+                </div>
+                <p id="login-error" class="text-red-500 text-sm mb-4 h-5"></p>
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300">Login</button>
+            </form>
+        </div>
+    </div>
+
+
+    <div class="min-h-screen flex flex-col">
+        <!-- Header --><header class="bg-gray-800 text-white shadow-md sticky top-0 z-40">
+            <div class="container mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
+                <div>
+                    <h1 class="text-lg sm:text-xl font-bold leading-tight">Balai Kesehatan Olahraga Masyarakat</h1>
+                    <p class="text-xs text-gray-300">Kalimantan Selatan</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <p id="current-datetime" class="text-sm hidden md:block"></p>
+                    <button id="logout-btn" class="hidden bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-3 rounded-lg text-sm"><i class="fas fa-sign-out-alt"></i></button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content --><main class="container mx-auto px-4 sm:px-6 py-8 flex-grow">
+            <!-- Tab Navigation --><div class="mb-8">
+                <div class="border-b border-gray-300">
+                    <nav class="flex flex-wrap -mb-px gap-x-4 sm:gap-x-6" aria-label="Tabs">
+                        <button id="tab-members" class="tab-button group inline-flex items-center py-3 px-1 text-sm font-semibold">
+                            <i class="fas fa-users mr-2"></i>
+                            <span>Kelola Member</span>
+                        </button>
+                        <button id="tab-check-in" class="tab-button group inline-flex items-center py-3 px-1 text-sm font-semibold">
+                            <i class="fas fa-user-check mr-2"></i>
+                            <span>Check-in Member</span>
+                        </button>
+                        <button id="tab-visitors" class="tab-button group inline-flex items-center py-3 px-1 text-sm font-semibold">
+                            <i class="fas fa-ticket-alt mr-2"></i>
+                            <span>Kunjungan Harian</span>
+                        </button>
+                        <button id="tab-lockers" class="tab-button group inline-flex items-center py-3 px-1 text-sm font-semibold">
+                            <i class="fas fa-key mr-2"></i>
+                            <span>Manajemen Loker</span>
+                        </button>
+                        <button id="tab-schedule" class="tab-button group inline-flex items-center py-3 px-1 text-sm font-semibold">
+                            <i class="fas fa-calendar-check mr-2"></i>
+                            <span>Daftar Jadwal</span>
+                        </button>
+                        <button id="tab-set-schedule" class="tab-button group inline-flex items-center py-3 px-1 text-sm font-semibold">
+                            <i class="fas fa-calendar-plus mr-2"></i>
+                            <span>Atur Jadwal</span>
+                        </button>
+                        <button id="tab-reports" class="tab-button group inline-flex items-center py-3 px-1 text-sm font-semibold">
+                            <i class="fas fa-chart-line mr-2"></i>
+                            <span>Laporan</span>
+                        </button>
+                    </nav>
+                </div>
+            </div>
+
+            <!-- Views --><div id="view-members">
+                 <div class="bg-white p-4 sm:p-6 rounded-lg shadow-lg">
+                    <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
+                        <div class="relative w-full md:w-1/3">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3"><i class="fas fa-search text-gray-400"></i></span>
+                            <input type="search" id="search-member" placeholder="Cari nama atau ID..." class="w-full pl-10 pr-4 py-2 border rounded-lg">
+                        </div>
+                        <button id="add-member-btn" class="w-full md:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-plus mr-2"></i> Tambah Member Baru
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto"><table class="w-full text-sm text-left text-gray-500"><thead class="text-xs text-gray-700 uppercase bg-gray-100"><tr><th class="px-6 py-3">ID</th><th class="px-6 py-3">Nama</th><th class="px-6 py-3">Paket</th><th class="px-6 py-3">Tgl Selesai</th><th class="px-6 py-3">Status</th>
+                        <th class="px-6 py-3">Metode Bayar</th>
+                        <th class="px-6 py-3 text-center">Loker</th><th class="px-6 py-3 text-center">Aksi</th></tr></thead><tbody id="member-list"></tbody></table></div>
+                </div>
+            </div>
+
+            <div id="view-check-in" class="hidden">
+                 <div class="bg-white p-4 sm:p-6 rounded-lg shadow-lg">
+                    <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
+                         <h2 class="text-xl font-semibold text-gray-700">Check-in Member Aktif</h2>
+                        <div class="relative w-full md:w-1/3">
+                            <span class="absolute inset-y-0 left-0 flex items-center pl-3"><i class="fas fa-search text-gray-400"></i></span>
+                            <input type="search" id="search-check-in-member" placeholder="Cari nama atau ID..." class="w-full pl-10 pr-4 py-2 border rounded-lg">
+                        </div>
+                    </div>
+                    <div class="overflow-y-auto h-[60vh]">
+                        <table class="w-full text-sm text-left text-gray-500">
+                            <thead class="text-xs text-gray-700 uppercase bg-gray-100 sticky top-0"><tr><th class="px-6 py-3">ID</th><th class="px-6 py-3">Nama</th><th class="px-6 py-3">Tgl Selesai</th><th class="px-6 py-3">Jam Masuk Terakhir</th><th class="px-6 py-3 text-center">Jml Check-in Hari Ini</th><th class="px-6 py-3 text-center">Aksi</th></tr></thead>
+                            <tbody id="check-in-list-view"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="view-visitors" class="hidden">
+                 <div class="bg-white p-4 sm:p-6 rounded-lg shadow-lg">
+                    <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
+                        <h2 class="text-xl font-semibold text-gray-700">Pengunjung Harian</h2>
+                         <div class="flex items-center gap-2">
+                            <label for="visitor-date-picker" class="text-sm font-medium">Tampilkan Tanggal:</label>
+                            <input type="date" id="visitor-date-picker" class="border rounded-lg p-2 text-sm">
+                        </div>
+                        <button id="add-visitor-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg flex items-center justify-center"><i class="fas fa-plus mr-2"></i> Tambah Pengunjung</button>
+                    </div>
+                    <div class="overflow-x-auto"><table class="w-full text-sm text-left text-gray-500"><thead class="text-xs text-gray-700 uppercase bg-gray-100"><tr><th class="px-6 py-3">ID</th><th class="px-6 py-3">Jam Masuk</th><th class="px-6 py-3">Nama</th><th class="px-6 py-3">Biaya</th>
+                        <th class="px-6 py-3">Metode Bayar</th>
+                        <th class="px-6 py-3 text-center">Loker</th><th class="px-6 py-3 text-center">Aksi</th></tr></thead><tbody id="visitor-list"></tbody></table></div>
+                </div>
+            </div>
+
+            <div id="view-lockers" class="hidden">
+                <div class="bg-white p-4 sm:p-6 rounded-lg shadow-lg">
+                    <h2 class="text-xl font-semibold text-gray-700 mb-4">Status Loker</h2>
+                    <div id="locker-grid" class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-3"></div>
+                </div>
+            </div>
+
+            <div id="view-schedule" class="hidden">
+                 <div class="bg-white p-4 sm:p-6 rounded-lg shadow-lg">
+                    <h2 class="text-xl font-semibold text-gray-700 mb-4">Daftar Jadwal & Check-in Jaga</h2>
+                    <div class="overflow-y-auto h-96"><table class="w-full text-sm text-left text-gray-500"><thead class="text-xs text-gray-700 uppercase bg-gray-100 sticky top-0"><tr><th class="px-4 py-3">Tanggal</th><th class="px-4 py-3">Shift</th><th class="px-4 py-3">Admin</th><th class="px-4 py-3">Status</th></tr></thead><tbody id="schedule-list"></tbody></table></div>
+                </div>
+            </div>
+            
+            <div id="view-set-schedule" class="hidden">
+                <div id="schedule-setter-panel" class="bg-white p-4 sm:p-6 rounded-lg shadow-lg max-w-lg mx-auto">
+                    <h2 class="text-xl font-semibold text-gray-700 mb-4">Atur Jadwal Jaga</h2>
+                    <div class="flex items-center mb-4 gap-4"><label for="schedule-date-picker" class="font-medium">Tanggal:</label><input type="date" id="schedule-date-picker" class="border rounded-lg p-2"></div>
+                    <form id="daily-schedule-form">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div><label for="schedule-pagi" class="block text-sm font-medium">Shift Pagi <span class="text-xs text-gray-500">(08:00 - 15:00)</span></label><input type="text" id="schedule-pagi" placeholder="Nama admin..." class="w-full px-3 py-2 border rounded-lg"></div>
+                            <div><label for="schedule-sore" class="block text-sm font-medium">Shift Sore <span class="text-xs text-gray-500">(15:00 - 21:00)</span></label><input type="text" id="schedule-sore" placeholder="Nama admin..." class="w-full px-3 py-2 border rounded-lg"></div>
+                        </div>
+                        <div class="flex justify-end mt-6">
+                            <button type="button" id="reset-schedule-btn" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg mr-auto"><i class="fas fa-trash-alt mr-2"></i> Reset Jadwal</button>
+                            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg"><i class="fas fa-save mr-2"></i> Simpan</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div id="view-reports" class="hidden">
+                <!-- Daily Summary --><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="bg-white p-6 rounded-lg shadow-lg text-center">
+                        <h3 class="text-sm font-medium text-gray-500">Total Kunjungan Harian</h3>
+                        <p id="report-daily-visitors" class="text-3xl font-bold mt-2 text-indigo-600">0</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-lg shadow-lg text-center">
+                        <h3 class="text-sm font-medium text-gray-500">Total Member Check-in</h3>
+                        <p id="report-member-checkins" class="text-3xl font-bold mt-2 text-blue-600">0</p>
+                    </div>
+                     <div class="bg-white p-6 rounded-lg shadow-lg text-center">
+                        <h3 class="text-sm font-medium text-gray-500">Kunjungan Laki-laki</h3>
+                        <p id="report-male-visitors" class="text-3xl font-bold mt-2 text-sky-600">0</p>
+                    </div>
+                     <div class="bg-white p-6 rounded-lg shadow-lg text-center">
+                        <h3 class="text-sm font-medium text-gray-500">Kunjungan Perempuan</h3>
+                        <p id="report-female-visitors" class="text-3xl font-bold mt-2 text-pink-600">0</p>
+                    </div>
+                </div>
+
+                <div class="max-w-4xl mx-auto">
+                     <div class="bg-white p-4 sm:p-6 rounded-lg shadow-lg">
+                        <div class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
+                            <h2 class="text-xl font-semibold text-gray-700">Laporan Pendapatan</h2>
+                            <div class="flex flex-wrap items-center gap-2">
+                               <label for="report-date-start" class="text-sm font-medium">Dari Tanggal:</label>
+                               <input type="date" id="report-date-start" class="border rounded-lg p-2 text-sm">
+                               <label for="report-date-end" class="text-sm font-medium">s/d</label>
+                               <input type="date" id="report-date-end" class="border rounded-lg p-2 text-sm">
+                               <button id="clear-report-date-btn" class="bg-gray-500 hover:bg-gray-600 text-white text-sm py-2 px-3 rounded-lg" title="Tampilkan Semua Tanggal"><i class="fas fa-times"></i></button>
+                           </div>
+                        </div>
+                        <div class="overflow-y-auto h-96"><table class="w-full text-sm text-left text-gray-500"><thead class="text-xs text-gray-700 uppercase bg-gray-100 sticky top-0"><tr><th class="px-4 py-3">Tanggal</th><th class="px-4 py-3">Tipe</th><th class="px-4 py-3">Nama</th><th class="px-4 py-3">Pendapatan</th></tr></thead><tbody id="transaction-list"></tbody></table></div>
+                        <div class="mt-4 pt-4 border-t-2"><h3 class="text-lg font-bold text-right"><span id="total-revenue-label"></span> <span id="total-revenue" class="text-green-600"></span></h3></div>
+                        <div class="mt-6 space-y-4">
+                            <button id="export-combined-revenue-btn" class="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center text-base"><i class="fas fa-file-excel mr-2"></i> Ekspor Laporan Lengkap</button>
+                            <button id="export-whatsapp-btn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg flex items-center justify-center text-base"><i class="fab fa-whatsapp mr-2"></i> Bagikan Laporan ke WhatsApp</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <footer class="text-center text-sm text-gray-500 py-4 border-t border-gray-200">
+             <p>Copyright 2025 EosAP</p>
+        </footer>
+    </div>
+
+    <!-- Modals --><div id="member-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-75 flex justify-center items-center p-4">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-lg"><div class="p-6 border-b"><h3 class="text-xl font-semibold" id="modal-title"></h3></div><form id="member-form" class="p-6"><input type="hidden" id="member-id"><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label for="member-name" class="block text-sm font-medium">Nama</label><input type="text" id="member-name" class="w-full px-3 py-2 border rounded-lg" required></div><div><label for="member-phone" class="block text-sm font-medium">No. HP</label><input type="tel" id="member-phone" class="w-full px-3 py-2 border rounded-lg" required></div><div><label for="member-gender" class="block text-sm font-medium">Jenis Kelamin</label><select id="member-gender" class="w-full px-3 py-2 border rounded-lg" required><option value="">Pilih...</option><option value="Laki-laki">Laki-laki</option><option value="Perempuan">Perempuan</option></select></div><div><label for="member-plan" class="block text-sm font-medium">Paket</label><select id="member-plan" class="w-full px-3 py-2 border rounded-lg" required><option value="1">1 Bulan</option><option value="3">3 Bulan</option><option value="6">6 Bulan</option><option value="12">12 Bulan</option></select></div><div><label for="member-payment-method" class="block text-sm font-medium">Metode Pembayaran</label><select id="member-payment-method" class="w-full px-3 py-2 border rounded-lg" required><option value="Cash">Cash</option><option value="Qris">Qris</option></select></div><div><label for="start-date" class="block text-sm font-medium">Tgl Mulai</label><input type="date" id="start-date" class="w-full px-3 py-2 border rounded-lg" required></div><div class="md:col-span-2"><label for="member-address" class="block text-sm font-medium">Alamat</label><textarea id="member-address" rows="2" class="w-full px-3 py-2 border rounded-lg"></textarea></div><div><label for="member-locker" class="block text-sm font-medium">Kunci Loker</label><select id="member-locker" class="w-full px-3 py-2 border rounded-lg"></select></div></div><div class="flex justify-end pt-4 border-t mt-6"><button type="button" class="cancel-btn bg-gray-200 py-2 px-4 rounded-lg mr-2">Batal</button><button type="submit" class="bg-blue-600 text-white py-2 px-4 rounded-lg">Simpan</button></div></form></div>
+    </div>
+    <div id="visitor-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-75 flex justify-center items-center p-4">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-lg"><div class="p-6 border-b"><h3 class="text-xl font-semibold" id="visitor-modal-title">Tambah Pengunjung Harian</h3></div><form id="visitor-form" class="p-6"><input type="hidden" id="visitor-id"><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label for="visitor-name" class="block text-sm font-medium">Nama</label><input type="text" id="visitor-name" class="w-full px-3 py-2 border rounded-lg" required></div><div><label for="visitor-phone" class="block text-sm font-medium">No. HP</label><input type="tel" id="visitor-phone" class="w-full px-3 py-2 border rounded-lg" required></div><div><label for="visitor-gender" class="block text-sm font-medium">Jenis Kelamin</label><select id="visitor-gender" class="w-full px-3 py-2 border rounded-lg" required><option value="">Pilih...</option><option value="Laki-laki">Laki-laki</option><option value="Perempuan">Perempuan</option></select></div><div><label for="visitor-price" class="block text-sm font-medium">Biaya (Rp)</label><input type="number" id="visitor-price" value="10000" class="w-full px-3 py-2 border rounded-lg" required></div><div><label for="visitor-payment-method" class="block text-sm font-medium">Metode Pembayaran</label><select id="visitor-payment-method" class="w-full px-3 py-2 border rounded-lg" required><option value="Cash">Cash</option><option value="Qris">Qris</option></select></div><div><label for="visitor-locker" class="block text-sm font-medium">Kunci Loker</label><select id="visitor-locker" class="w-full px-3 py-2 border rounded-lg"></select></div><div class="md:col-span-2"><label for="visitor-address" class="block text-sm font-medium">Alamat</label><textarea id="visitor-address" rows="2" class="w-full px-3 py-2 border rounded-lg"></textarea></div></div><div class="flex justify-end pt-4 border-t mt-6"><button type="button" class="cancel-btn bg-gray-200 py-2 px-4 rounded-lg mr-2">Batal</button><button type="submit" class="bg-indigo-600 text-white py-2 px-4 rounded-lg">Simpan</button></div></form></div>
+    </div>
+    <div id="details-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-75 flex justify-center items-center p-4">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md"><div class="p-6 border-b flex justify-between items-center"><h3 class="text-xl font-semibold" id="details-title"></h3><button class="cancel-btn text-2xl">&times;</button></div><div id="details-content" class="p-6 space-y-3"></div></div>
+    </div>
+    <div id="renewal-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-75 flex justify-center items-center p-4">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-md"><div class="p-6 border-b"><h3 class="text-xl font-semibold">Perpanjang Keanggotaan</h3></div><form id="renewal-form" class="p-6"><input type="hidden" id="renewal-member-id"><p class="mb-4">Perpanjang untuk: <strong id="renewal-member-name"></strong></p><div class="mb-4"><label for="renewal-plan" class="block text-sm font-medium">Pilih Paket Baru</label><select id="renewal-plan" class="w-full px-3 py-2 border rounded-lg" required><option value="1">1 Bulan</option><option value="3">3 Bulan</option><option value="6">6 Bulan</option><option value="12">12 Bulan</option></select></div><div class="mb-4"><label for="renewal-payment-method" class="block text-sm font-medium">Metode Pembayaran</label><select id="renewal-payment-method" class="w-full px-3 py-2 border rounded-lg" required><option value="Cash">Cash</option><option value="Qris">Qris</option></select></div><div class="mb-4 text-lg font-bold">Harga: <span id="renewal-price"></span></div><div class="flex justify-end pt-4 border-t mt-6"><button type="button" class="cancel-btn bg-gray-200 py-2 px-4 rounded-lg mr-2">Batal</button><button type="submit" class="bg-green-600 text-white py-2 px-4 rounded-lg">Proses</button></div></form></div>
+    </div>
+    <div id="locker-details-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-75 flex justify-center items-center p-4">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-sm"><div class="p-6 border-b flex justify-between items-center"><h3 class="text-xl font-semibold" id="locker-details-title"></h3><button class="cancel-btn text-2xl">&times;</button></div><div id="locker-details-content" class="p-6"></div></div>
+    </div>
+    <div id="superadmin-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-75 flex justify-center items-center p-4">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-sm">
+            <div class="p-6 border-b"><h3 class="text-xl font-semibold">Akses Super Admin</h3></div>
+            <form id="superadmin-form" class="p-6">
+                <p class="text-sm text-gray-600 mb-4">Tab ini memerlukan hak akses Super Admin. Silakan masukkan password.</p>
+                <div>
+                    <label for="superadmin-password" class="block text-sm font-medium">Password Super Admin</label>
+                    <input type="password" id="superadmin-password" class="w-full mt-1 px-3 py-2 border rounded-lg" required placeholder="superadmin">
+                </div>
+                <p id="superadmin-error" class="text-red-500 text-sm mt-2 h-5"></p>
+                <div class="flex justify-end pt-4 border-t mt-4">
+                    <button type="button" class="cancel-btn bg-gray-200 py-2 px-4 rounded-lg mr-2">Batal</button>
+                    <button type="submit" class="bg-red-600 text-white py-2 px-4 rounded-lg">Masuk</button>
+                </div>
+            </form>
+        </div>
+    </div>
+     <div id="confirm-reset-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-75 flex justify-center items-center p-4">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-sm">
+            <div class="p-6 border-b"><h3 class="text-xl font-semibold">Konfirmasi Reset Jadwal</h3></div>
+            <div class="p-6">
+                <p class="text-gray-700">Anda yakin ingin menghapus semua data jadwal jaga? Tindakan ini tidak dapat dibatalkan.</p>
+            </div>
+            <div class="flex justify-end p-4 bg-gray-50 rounded-b-lg">
+                <button id="cancel-reset-btn" type="button" class="bg-gray-200 py-2 px-4 rounded-lg mr-2">Batal</button>
+                <button id="confirm-reset-btn" type="button" class="bg-red-600 text-white py-2 px-4 rounded-lg">Ya, Reset</button>
+            </div>
+        </div>
+    </div>
+    <div id="history-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-75 flex justify-center items-center p-4">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl">
+            <div class="p-6 border-b flex justify-between items-center"><h3 class="text-xl font-semibold" id="history-title">Riwayat Aktivitas</h3><button class="cancel-btn text-2xl">&times;</button></div>
+            <div class="p-6">
+                <div class="overflow-y-auto h-96">
+                    <table class="w-full text-sm text-left text-gray-500">
+                        <thead class="text-xs text-gray-700 uppercase bg-gray-100 sticky top-0"><tr><th class="px-4 py-3">Tanggal</th><th class="px-4 py-3">Tipe</th><th class="px-4 py-3">Keterangan</th><th class="px-4 py-3">Metode Bayar</th><th class="px-4 py-3">Jumlah</th></tr></thead>
+                        <tbody id="history-list"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="confirm-delete-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-75 flex justify-center items-center p-4">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-sm">
+            <div class="p-6 border-b"><h3 class="text-xl font-semibold" id="confirm-delete-title">Konfirmasi Hapus</h3></div>
+            <div class="p-6">
+                <p class="text-gray-700">Anda yakin ingin menghapus <strong id="delete-item-name"></strong>? Tindakan ini akan menghapus data secara permanen.</p>
+            </div>
+            <div class="flex justify-end p-4 bg-gray-50 rounded-b-lg">
+                <button type="button" class="cancel-btn bg-gray-200 py-2 px-4 rounded-lg mr-2">Batal</button>
+                <button id="confirm-delete-btn" type="button" class="bg-red-600 text-white py-2 px-4 rounded-lg">Ya, Hapus</button>
+            </div>
+        </div>
+    </div>
+    <div id="splash-modal" class="modal fixed inset-0 bg-gray-900 bg-opacity-75 flex justify-center items-center p-4">
+        <div class="bg-white rounded-lg shadow-xl w-full max-w-sm text-center p-8">
+            <div class="text-green-500 text-6xl mb-4">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-800" id="splash-message"></h3>
+            <p class="text-gray-500">Selamat Datang!</p>
+        </div>
+    </div>
+
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // --- STATE & DATA ---
+        let isLoggedIn = false;
+        const ADMIN_PASSWORD = 'admin123';
+        const SUPER_ADMIN_PASSWORD = 'superadmin';
+        const TOTAL_LOCKERS = 20;
+        const RENEWAL_PRICE = 100000;
+
+        const planPrices = { 1: 150000, 3: 400000, 6: 750000, 12: 1200000 };
+        let members = JSON.parse(localStorage.getItem('gymMembers')) || [];
+        let dailyVisitors = JSON.parse(localStorage.getItem('gymDailyVisitors')) || [];
+        let checkIns = JSON.parse(localStorage.getItem('gymCheckIns')) || [];
+        let schedules = JSON.parse(localStorage.getItem('gymSchedules')) || [];
+        let shiftCheckIns = JSON.parse(localStorage.getItem('gymShiftCheckIns')) || [];
+        let lockers = JSON.parse(localStorage.getItem('gymLockers')) || [];
+        let transactions = JSON.parse(localStorage.getItem('gymTransactions')) || [];
+        
+        // --- DOM ELEMENTS ---
+        const memberList = document.getElementById('member-list');
+        const visitorList = document.getElementById('visitor-list');
+        const scheduleDatePicker = document.getElementById('schedule-date-picker');
+        const visitorDatePicker = document.getElementById('visitor-date-picker');
+        const scheduleList = document.getElementById('schedule-list');
+        const dailyScheduleForm = document.getElementById('daily-schedule-form');
+        const searchInput = document.getElementById('search-member');
+        const loginOverlay = document.getElementById('login-overlay');
+        const loginForm = document.getElementById('login-form');
+        const logoutBtn = document.getElementById('logout-btn');
+        const tabs = document.querySelectorAll('.tab-button');
+        const protectedTabs = ['tab-members', 'tab-check-in', 'tab-visitors', 'tab-lockers', 'tab-set-schedule'];
+        const superAdminForm = document.getElementById('superadmin-form');
+        const reportDateStart = document.getElementById('report-date-start');
+        const reportDateEnd = document.getElementById('report-date-end');
+
+        const modals = { member: document.getElementById('member-modal'), visitor: document.getElementById('visitor-modal'), details: document.getElementById('details-modal'), renewal: document.getElementById('renewal-modal'), lockerDetails: document.getElementById('locker-details-modal'), superAdmin: document.getElementById('superadmin-modal'), confirmReset: document.getElementById('confirm-reset-modal'), history: document.getElementById('history-modal'), confirmDelete: document.getElementById('confirm-delete-modal'), splash: document.getElementById('splash-modal') };
+
+        // --- UTILITY FUNCTIONS ---
+        const saveAllData = () => {
+            localStorage.setItem('gymMembers', JSON.stringify(members));
+            localStorage.setItem('gymDailyVisitors', JSON.stringify(dailyVisitors));
+            localStorage.setItem('gymCheckIns', JSON.stringify(checkIns));
+            localStorage.setItem('gymSchedules', JSON.stringify(schedules));
+            localStorage.setItem('gymShiftCheckIns', JSON.stringify(shiftCheckIns));
+            localStorage.setItem('gymLockers', JSON.stringify(lockers));
+            localStorage.setItem('gymTransactions', JSON.stringify(transactions));
+        };
+        const formatDate = (d) => new Date(d).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' });
+        const formatTime = (d) => new Date(d).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+        const formatCurrency = (n) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(n);
+        const getTodayDateString = () => new Date().toISOString().split('T')[0];
+        const openModal = (name) => modals[name].classList.add('is-open');
+        const closeModal = (name) => modals[name].classList.remove('is-open');
+        const calculateEndDate = (start, months) => { const d = new Date(start); d.setMonth(d.getMonth() + parseInt(months)); return d; };
+        const exportToCsv = (filename, csvContent) => {
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', filename);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        };
+
+
+        // --- AUTHENTICATION ---
+        const handleLogin = (e) => {
+            e.preventDefault();
+            const password = document.getElementById('password').value;
+            const errorEl = document.getElementById('login-error');
+            
+            if (password === ADMIN_PASSWORD) {
+                isLoggedIn = true;
+                sessionStorage.setItem('gymIsLoggedIn', 'true');
+                loginOverlay.classList.remove('is-open');
+                logoutBtn.classList.remove('hidden');
+                updateUIAfterLogin();
+            } else {
+                errorEl.textContent = 'Password salah. Coba lagi.';
+                setTimeout(() => errorEl.textContent = '', 3000);
+            }
+        };
+        const handleLogout = () => { 
+            isLoggedIn = false; 
+            sessionStorage.removeItem('gymIsLoggedIn');
+            window.location.reload(); 
+        };
+        const updateUIAfterLogin = () => {
+            updateTabAccess();
+            const scheduleSetter = document.getElementById('schedule-setter-panel');
+            if (isLoggedIn) scheduleSetter.classList.remove('hidden'); else scheduleSetter.classList.add('hidden');
+        };
+        const updateTabAccess = () => {
+            tabs.forEach(tab => {
+                if (protectedTabs.includes(tab.id) && !isLoggedIn) tab.classList.add('disabled'); else tab.classList.remove('disabled');
+            });
+            if (!isLoggedIn) document.getElementById('tab-schedule').click();
+        };
+
+        // --- RENDER FUNCTIONS ---
+        const renderMembers = (searchTerm = '') => {
+            memberList.innerHTML = '';
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const filteredMembers = members.filter(m => m.name.toLowerCase().includes(searchTerm.toLowerCase()) || m.id.toLowerCase().includes(searchTerm.toLowerCase()));
+
+            filteredMembers.forEach(m => {
+                const endDate = calculateEndDate(m.startDate, m.plan);
+                const isActive = endDate >= today;
+
+                let renewalInfo = '';
+                if (m.renewalCount === 0) {
+                    renewalInfo = `<span class="text-xs text-purple-600 bg-purple-100 font-semibold ml-2 px-2 py-0.5 rounded-full">Baru</span>`;
+                } else if (m.renewalCount > 0) {
+                    renewalInfo = `<span class="text-xs text-blue-500 font-semibold ml-2">(${m.renewalCount}x Perpanjang)</span>`;
+                }
+
+                const statusBadge = isActive ? `<span class="px-2 text-xs font-semibold rounded-full bg-green-100 text-green-800">Aktif</span>` : `<span class="px-2 text-xs font-semibold rounded-full bg-red-100 text-red-800">Kadaluwarsa</span>`;
+
+                let actionButtons = '';
+                
+                actionButtons += `<button class="text-gray-600 view-history-btn" data-id="${m.id}" title="Lihat Riwayat"><i class="fas fa-eye"></i></button>`;
+                actionButtons += `<button class="text-green-600 hover:text-green-900 renew-btn" data-id="${m.id}" title="Perpanjang"><i class="fas fa-sync-alt"></i></button>`;
+                actionButtons += `<button class="text-blue-600 edit-btn" data-id="${m.id}" title="Edit"><i class="fas fa-edit"></i></button>`;
+                actionButtons += `<button class="text-red-600 delete-btn" data-id="${m.id}" title="Hapus"><i class="fas fa-trash"></i></button>`;
+
+                let lockerHtml = '<span>-</span>';
+                if (m.lockerId) {
+                    if (m.lockerReturned) {
+                        lockerHtml = `<span class="text-xs text-gray-500">Loker ${m.lockerId} (Selesai)</span>`;
+                    } else {
+                        lockerHtml = `<div class="flex items-center justify-center gap-2"><span>${m.lockerId}</span><button class="return-member-locker-btn bg-yellow-500 text-white text-xs px-2 py-1 rounded" data-member-id="${m.id}" data-locker-id="${m.lockerId}">Return</button></div>`;
+                    }
+                }
+
+                const row = `<tr class="bg-white border-b hover:bg-gray-50"><td class="px-6 py-4">${m.id}</td><td class="px-6 py-4">${m.name}${renewalInfo}</td><td class="px-6 py-4">${m.plan} Bln</td><td class="px-6 py-4">${formatDate(endDate)}</td><td class="px-6 py-4">${statusBadge}</td><td class="px-6 py-4">${m.paymentMethod || 'N/A'}</td><td class="px-6 py-4 text-center">${lockerHtml}</td><td class="px-6 py-4 text-center space-x-3">${actionButtons}</td></tr>`;
+                memberList.innerHTML += row;
+            });
+        };
+        const renderDailyVisitors = () => {
+            visitorList.innerHTML = '';
+            const selectedDate = visitorDatePicker.value;
+            const filteredVisitors = dailyVisitors.filter(v => v.visitDate === selectedDate);
+            filteredVisitors.forEach(v => {
+                let lockerHtml = '<span>-</span>';
+                if (v.lockerId) {
+                    if (v.lockerReturned) {
+                        lockerHtml = `<span class="text-xs text-gray-500">Loker ${v.lockerId} (Selesai)</span>`;
+                    } else {
+                        lockerHtml = `<div class="flex items-center justify-center gap-2"><span>${v.lockerId}</span><button class="return-visitor-locker-btn bg-yellow-500 text-white text-xs px-2 py-1 rounded" data-visitor-id="${v.id}" data-locker-id="${v.lockerId}">Return</button></div>`;
+                    }
+                }
+                
+                let actions = '';
+                actions += `<button class="text-gray-600 details-btn" data-id="${v.id}" title="Lihat Detail"><i class="fas fa-eye"></i></button>`;
+                actions += `<button class="text-blue-600 edit-visitor-btn" data-id="${v.id}" title="Edit"><i class="fas fa-edit"></i></button>`;
+                actions += `<button class="text-red-600 delete-visitor-btn" data-id="${v.id}" title="Hapus"><i class="fas fa-trash"></i></button>`;
+
+                const row = `<tr class="bg-white border-b"><td class="px-6 py-4">${v.id}</td><td class="px-6 py-4">${formatTime(v.visitTime)}</td><td class="px-6 py-4">${v.name}</td><td class="px-6 py-4">${formatCurrency(v.price)}</td><td class="px-6 py-4">${v.paymentMethod || 'N/A'}</td><td class="px-6 py-4 text-center">${lockerHtml}</td><td class="px-6 py-4 text-center space-x-3">${actions}</td></tr>`;
+                visitorList.innerHTML += row;
+            });
+        };
+        const renderScheduleView = () => {
+            const selectedDate = scheduleDatePicker.value;
+            const schedule = schedules.find(s => s.date === selectedDate);
+            document.getElementById('schedule-pagi').value = schedule?.pagi || '';
+            document.getElementById('schedule-sore').value = schedule?.sore || '';
+            scheduleList.innerHTML = '';
+            const sortedSchedules = [...schedules].sort((a,b) => new Date(b.date) - new Date(a.date));
+            sortedSchedules.forEach(s => {
+                ['pagi', 'sore'].forEach(shift => {
+                    const adminName = s[shift]; if (!adminName) return;
+                    
+                    let shiftText = '';
+                    if (shift === 'pagi') {
+                        shiftText = 'Pagi <span class="text-xs text-gray-500">(08:00-15:00)</span>';
+                    } else if (shift === 'sore') {
+                        shiftText = 'Sore <span class="text-xs text-gray-500">(15:00-21:00)</span>';
+                    }
+
+                    const shiftCheckIn = shiftCheckIns.find(sc => sc.date === s.date && sc.shift === shift);
+                    let statusHtml = shiftCheckIn ? `<span class="text-green-600 font-semibold"><i class="fas fa-check-circle mr-1"></i> ${formatTime(shiftCheckIn.time)}</span>` : (s.date === getTodayDateString() ? `<button class="shift-checkin-btn bg-blue-500 text-white text-xs py-1 px-2 rounded" data-date="${s.date}" data-shift="${shift}" data-admin="${adminName}">Check-in</button>` : `<span class="text-gray-400">Menunggu</span>`);
+                    scheduleList.innerHTML += `<tr class="border-b"><td class="px-4 py-2">${formatDate(s.date)}</td><td class="px-4 py-2">${shiftText}</td><td class="px-4 py-2">${adminName}</td><td class="px-4 py-2">${statusHtml}</td></tr>`;
+                });
+            });
+        };
+        const renderLockers = () => {
+            const lockerGrid = document.getElementById('locker-grid'); lockerGrid.innerHTML = '';
+            lockers.forEach(locker => {
+                const isAvailable = locker.status === 'available';
+                const lockerEl = `<div class="locker-item p-2 border ${isAvailable ? 'bg-green-100 border-green-400' : 'bg-red-100 border-red-400'} rounded-lg text-center cursor-pointer" data-id="${locker.id}"><div class="font-bold text-lg ${isAvailable ? 'text-green-700' : 'text-red-700'}">${locker.id}</div><div class="text-xs text-gray-500 truncate">${isAvailable ? 'Tersedia' : locker.assignedToName}</div></div>`;
+                lockerGrid.innerHTML += lockerEl;
+            });
+        };
+        const populateLockerDropdowns = () => {
+            const availableLockers = lockers.filter(l => l.status === 'available');
+            const options = ['<option value="">- Pilih Loker -</option>', ...availableLockers.map(l => `<option value="${l.id}">Loker ${l.id}</option>`)].join('');
+            document.getElementById('member-locker').innerHTML = options;
+            document.getElementById('visitor-locker').innerHTML = options;
+        };
+        const renderReports = () => {
+            // Summary Cards for TODAY
+            const todayStr = getTodayDateString();
+            const todayVisitors = dailyVisitors.filter(v => v.visitDate === todayStr);
+            const todayCheckIns = checkIns.filter(ci => ci.date === todayStr);
+
+            let maleVisits = 0;
+            let femaleVisits = 0;
+
+            todayVisitors.forEach(visitor => {
+                if (visitor.gender === 'Laki-laki') maleVisits++;
+                else if (visitor.gender === 'Perempuan') femaleVisits++;
+            });
+
+            todayCheckIns.forEach(checkIn => {
+                const member = members.find(m => m.id === checkIn.memberId);
+                if (member) {
+                    if (member.gender === 'Laki-laki') maleVisits++;
+                    else if (member.gender === 'Perempuan') femaleVisits++;
+                }
+            });
+
+            document.getElementById('report-daily-visitors').innerText = todayVisitors.length;
+            document.getElementById('report-member-checkins').innerText = todayCheckIns.length;
+            document.getElementById('report-male-visitors').innerText = maleVisits;
+            document.getElementById('report-female-visitors').innerText = femaleVisits;
+
+            // Transaction List with filter
+            const transactionList = document.getElementById('transaction-list');
+            const totalRevenueLabel = document.getElementById('total-revenue-label');
+            transactionList.innerHTML = '';
+            const startDate = reportDateStart.value;
+            const endDate = reportDateEnd.value;
+            
+            let filteredTransactions;
+
+            if (startDate && endDate) {
+                // Range selection
+                filteredTransactions = transactions.filter(t => t.date >= startDate && t.date <= endDate);
+                totalRevenueLabel.textContent = 'Total Pendapatan (Rentang):';
+            } else if (startDate) {
+                // Single day selection (only start date)
+                filteredTransactions = transactions.filter(t => t.date === startDate);
+                totalRevenueLabel.textContent = 'Total Pendapatan (Tanggal Dipilih):';
+            } else if (endDate) {
+                // Single day selection (only end date)
+                filteredTransactions = transactions.filter(t => t.date === endDate);
+                totalRevenueLabel.textContent = 'Total Pendapatan (Tanggal Dipilih):';
+            } else {
+                // All time
+                filteredTransactions = [...transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
+                totalRevenueLabel.textContent = 'Total Pendapatan (Semua Tanggal):';
+            }
+            
+            let totalRevenue = 0;
+            filteredTransactions.forEach(t => {
+                transactionList.innerHTML += `<tr class="border-b"><td class="px-4 py-2">${formatDate(t.date)}</td><td class="px-4 py-2">${t.type}</td><td class="px-4 py-2">${t.name}</td><td class="px-4 py-2">${formatCurrency(t.amount)}</td></tr>`;
+                totalRevenue += t.amount;
+            });
+            document.getElementById('total-revenue').innerText = formatCurrency(totalRevenue);
+        };
+        const renderCheckInView = (searchTerm = '') => {
+            const checkInListView = document.getElementById('check-in-list-view');
+            checkInListView.innerHTML = '';
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const activeMembers = members.filter(m => {
+                const endDate = calculateEndDate(m.startDate, m.plan);
+                return endDate >= today;
+            });
+            
+            const filtered = activeMembers.filter(m => 
+                m.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                m.id.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+
+            filtered.forEach(m => {
+                const endDate = calculateEndDate(m.startDate, m.plan);
+                const todaysCheckIns = checkIns.filter(ci => ci.date === getTodayDateString() && ci.memberId === m.id);
+                const checkInCount = todaysCheckIns.length;
+
+                let lastCheckInTime = '-';
+                if (checkInCount > 0) {
+                    lastCheckInTime = formatTime(todaysCheckIns[todaysCheckIns.length - 1].time);
+                }
+
+                const actionButton = `<button class="bg-teal-500 hover:bg-teal-600 text-white text-xs py-1 px-3 rounded-full checkin-view-btn" data-id="${m.id}">Check-in</button>`;
+
+                const row = `
+                    <tr class="bg-white border-b hover:bg-gray-50">
+                        <td class="px-6 py-4">${m.id}</td>
+                        <td class="px-6 py-4 font-medium">${m.name}</td>
+                        <td class="px-6 py-4">${formatDate(endDate)}</td>
+                        <td class="px-6 py-4">${lastCheckInTime}</td>
+                        <td class="px-6 py-4 text-center"><span class="font-semibold">${checkInCount}x</span></td>
+                        <td class="px-6 py-4 text-center">${actionButton}</td>
+                    </tr>
+                `;
+                checkInListView.innerHTML += row;
+            });
+        };
+
+        const renderHistoryModal = (memberId) => {
+            const member = members.find(m => m.id === memberId);
+            if (!member) return;
+
+            document.getElementById('history-title').innerText = `Riwayat Aktivitas: ${member.name}`;
+            const historyList = document.getElementById('history-list');
+            historyList.innerHTML = '';
+
+            const memberTransactions = transactions.filter(t => t.id === memberId).map(t => ({
+                date: new Date(t.date),
+                type: t.type,
+                description: t.description,
+                paymentMethod: t.paymentMethod || 'N/A',
+                amount: t.amount,
+                isTransaction: true
+            }));
+
+            const memberCheckIns = checkIns.filter(ci => ci.memberId === memberId).map(ci => ({
+                date: new Date(ci.time),
+                type: 'Check-in',
+                description: `Masuk pukul ${formatTime(ci.time)}`,
+                paymentMethod: '-',
+                amount: null,
+                isTransaction: false
+            }));
+
+            const combinedHistory = [...memberTransactions, ...memberCheckIns].sort((a, b) => b.date - a.date);
+
+            if (combinedHistory.length === 0) {
+                historyList.innerHTML = '<tr><td colspan="5" class="text-center p-4">Tidak ada riwayat aktivitas.</td></tr>';
+            } else {
+                combinedHistory.forEach(item => {
+                    const row = `
+                        <tr class="border-b">
+                            <td class="px-4 py-2">${formatDate(item.date)}</td>
+                            <td class="px-4 py-2">${item.type}</td>
+                            <td class="px-4 py-2">${item.description}</td>
+                            <td class="px-4 py-2">${item.paymentMethod}</td>
+                            <td class="px-4 py-2">${item.isTransaction ? formatCurrency(item.amount) : '-'}</td>
+                        </tr>
+                    `;
+                    historyList.innerHTML += row;
+                });
+            }
+            openModal('history');
+        };
+
+        
+        // --- FORM & ACTION HANDLERS ---
+        loginForm.addEventListener('submit', handleLogin);
+        logoutBtn.addEventListener('click', handleLogout);
+        dailyScheduleForm.addEventListener('submit', (e) => {
+            e.preventDefault(); const selectedDate = scheduleDatePicker.value; if (!selectedDate) return;
+            const index = schedules.findIndex(s => s.date === selectedDate);
+            const data = { date: selectedDate, pagi: document.getElementById('schedule-pagi').value, sore: document.getElementById('schedule-sore').value };
+            if (index > -1) schedules[index] = data; else schedules.push(data);
+            saveAllData(); alert(`Jadwal untuk ${formatDate(selectedDate)} disimpan.`); renderScheduleView();
+        });
+        document.getElementById('member-form').addEventListener('submit', e => {
+            e.preventDefault();
+            const id = document.getElementById('member-id').value;
+            const plan = document.getElementById('member-plan').value;
+            const lockerId = document.getElementById('member-locker').value;
+            const paymentMethod = document.getElementById('member-payment-method').value;
+            let data = { 
+                name: document.getElementById('member-name').value, 
+                phone: document.getElementById('member-phone').value, 
+                gender: document.getElementById('member-gender').value, 
+                plan, 
+                address: document.getElementById('member-address').value, 
+                startDate: document.getElementById('start-date').value, 
+                price: planPrices[plan],
+                paymentMethod: paymentMethod
+            };
+            
+            if (lockerId) {
+                data.lockerId = lockerId;
+                data.lockerReturned = false;
+            }
+
+            if (id) {
+                const index = members.findIndex(m => m.id === id);
+                const existingData = members[index];
+                members[index] = { ...existingData, ...data };
+                // Optionally update the latest transaction if editing payment method for a new member
+                const latestTransaction = transactions.filter(t => t.id === id).sort((a,b) => new Date(b.date) - new Date(a.date))[0];
+                if (latestTransaction && latestTransaction.type === 'Pendaftaran Member') {
+                    latestTransaction.paymentMethod = paymentMethod;
+                }
+            } else {
+                const lastId = members.length > 0 ? parseInt(members[members.length - 1].id.replace('GM', '')) : 0;
+                data.id = 'GM' + String(lastId + 1).padStart(3, '0');
+                data.renewalCount = 0; // Initialize renewal count for new members
+                members.push(data);
+                transactions.push({ date: data.startDate, type: 'Pendaftaran Member', id: data.id, name: data.name, description: `Paket ${plan} Bulan`, amount: planPrices[plan], paymentMethod: data.paymentMethod });
+            }
+            if(lockerId) assignLocker(lockerId, data.id || id, data.name, 'Member');
+            saveAllData(); renderMembers(); renderReports(); renderLockers(); closeModal('member');
+        });
+        document.getElementById('visitor-form').addEventListener('submit', e => {
+            e.preventDefault();
+            const id = document.getElementById('visitor-id').value;
+            const lockerId = document.getElementById('visitor-locker').value;
+            const paymentMethod = document.getElementById('visitor-payment-method').value;
+            let data = { 
+                name: document.getElementById('visitor-name').value, 
+                phone: document.getElementById('visitor-phone').value, 
+                gender: document.getElementById('visitor-gender').value, 
+                price: parseFloat(document.getElementById('visitor-price').value), 
+                address: document.getElementById('visitor-address').value, 
+                lockerId: lockerId || null, 
+                paymentMethod: paymentMethod 
+            };
+
+            if (id) { // Editing existing visitor
+                const index = dailyVisitors.findIndex(v => v.id === id);
+                if (index > -1) {
+                    const existingVisitor = dailyVisitors[index];
+                    dailyVisitors[index] = { ...existingVisitor, ...data };
+                }
+                const transIndex = transactions.findIndex(t => t.id === id);
+                if (transIndex > -1) {
+                    transactions[transIndex].name = data.name;
+                    transactions[transIndex].amount = data.price;
+                    transactions[transIndex].paymentMethod = data.paymentMethod;
+                }
+            } else { // Adding new visitor
+                const lastId = dailyVisitors.length > 0 ? parseInt(dailyVisitors[dailyVisitors.length - 1].id.replace('DV', '')) : 0;
+                data.id = 'DV' + String(lastId + 1).padStart(3, '0');
+                data.visitDate = getTodayDateString();
+                data.visitTime = new Date().toISOString();
+                data.lockerReturned = false;
+                dailyVisitors.push(data);
+                transactions.push({ date: data.visitDate, type: 'Pengunjung Harian', id: data.id, name: data.name, description: 'Kunjungan 1x', amount: data.price, paymentMethod: data.paymentMethod });
+            }
+
+            if(lockerId) assignLocker(lockerId, data.id || id, data.name, 'Pengunjung');
+            saveAllData(); renderDailyVisitors(); renderReports(); renderLockers(); closeModal('visitor');
+        });
+        document.getElementById('renewal-form').addEventListener('submit', e => {
+            e.preventDefault(); 
+            const id = document.getElementById('renewal-member-id').value; 
+            const newPlan = document.getElementById('renewal-plan').value;
+            const paymentMethod = document.getElementById('renewal-payment-method').value;
+            const index = members.findIndex(m => m.id === id);
+            if (index > -1) {
+                members[index].startDate = getTodayDateString(); 
+                members[index].plan = newPlan; 
+                members[index].renewalCount = (members[index].renewalCount || 0) + 1;
+                members[index].paymentMethod = paymentMethod;
+                transactions.push({ date: getTodayDateString(), type: 'Perpanjangan Member', id: id, name: members[index].name, description: `Paket ${newPlan} Bulan`, amount: RENEWAL_PRICE, paymentMethod: paymentMethod });
+                saveAllData(); renderMembers(); renderReports(); closeModal('renewal');
+            }
+        });
+        superAdminForm.addEventListener('submit', e => {
+            e.preventDefault();
+            const passwordInput = document.getElementById('superadmin-password');
+            const errorEl = document.getElementById('superadmin-error');
+            if (passwordInput.value === SUPER_ADMIN_PASSWORD) {
+                errorEl.textContent = '';
+                passwordInput.value = '';
+                closeModal('superAdmin');
+                
+                const tabToActivate = document.getElementById('tab-set-schedule');
+                tabs.forEach(t => t.classList.remove('active', 'border-blue-500'));
+                tabToActivate.classList.add('active', 'border-blue-500');
+                document.querySelectorAll('main > div[id^="view-"]').forEach(v => v.classList.add('hidden'));
+                document.getElementById('view-set-schedule').classList.remove('hidden');
+
+            } else {
+                errorEl.textContent = 'Password Super Admin salah.';
+                setTimeout(() => errorEl.textContent = '', 3000);
+            }
+        });
+        document.getElementById('export-combined-revenue-btn').addEventListener('click', () => {
+            const currentHour = new Date().getHours();
+            let currentShift = null;
+
+            if (currentHour >= 8 && currentHour < 15) {
+                currentShift = 'pagi';
+            } else if (currentHour >= 15 && currentHour < 21) {
+                currentShift = 'sore';
+            }
+
+            if (!currentShift) {
+                alert('Ekspor laporan hanya bisa dilakukan saat jam kerja (Shift Pagi 08:00-15:00 / Shift Sore 15:00-21:00).');
+                return;
+            }
+            
+            const todayStr = getTodayDateString();
+            const hasCheckedIn = shiftCheckIns.some(ci => ci.date === todayStr && ci.shift === currentShift);
+
+            if (!hasCheckedIn) {
+                alert(`Petugas jaga Shift ${currentShift.charAt(0).toUpperCase() + currentShift.slice(1)} belum melakukan check-in. Silakan check-in terlebih dahulu di tab "Daftar Jadwal".`);
+                return;
+            }
+
+            const now = new Date();
+            const currentYear = now.getFullYear();
+            const currentMonth = now.getMonth();
+
+            const newMembersThisMonth = transactions.filter(t => {
+                const transactionDate = new Date(t.date);
+                return t.type === 'Pendaftaran Member' &&
+                       transactionDate.getFullYear() === currentYear &&
+                       transactionDate.getMonth() === currentMonth;
+            }).length;
+
+            const renewalsThisMonth = transactions.filter(t => {
+                const transactionDate = new Date(t.date);
+                return t.type === 'Perpanjangan Member' &&
+                       transactionDate.getFullYear() === currentYear &&
+                       transactionDate.getMonth() === currentMonth;
+            }).length;
+
+            const todayVisitors = dailyVisitors.filter(v => v.visitDate === todayStr);
+            const todayCheckIns = checkIns.filter(ci => ci.date === todayStr);
+            
+            let maleVisits = 0;
+            let femaleVisits = 0;
+
+            todayVisitors.forEach(visitor => {
+                if (visitor.gender === 'Laki-laki') maleVisits++;
+                else if (visitor.gender === 'Perempuan') femaleVisits++;
+            });
+
+            todayCheckIns.forEach(checkIn => {
+                const member = members.find(m => m.id === checkIn.memberId);
+                if (member) {
+                    if (member.gender === 'Laki-laki') maleVisits++;
+                    else if (member.gender === 'Perempuan') femaleVisits++;
+                }
+            });
+
+            const todaySchedule = schedules.find(s => s.date === todayStr) || {};
+            const totalRevenue = transactions.reduce((sum, t) => sum + t.amount, 0);
+
+            const summaryData = [
+                ["Laporan Ringkasan"],
+                ["Tanggal Ekspor:", formatDate(now)],
+                ["Jam Ekspor:", formatTime(now)],
+                [""], // Blank line
+                ["Total Member Baru (Bulan Ini):", newMembersThisMonth],
+                ["Total Member Perpanjangan (Bulan Ini):", renewalsThisMonth],
+                ["Total Pengunjung Non-Member (Hari Ini):", todayVisitors.length],
+                ["Total Pengunjung Member (Hari Ini):", todayCheckIns.length],
+                ["Total Kunjungan Laki-laki Hari Ini:", maleVisits],
+                ["Total Kunjungan Perempuan Hari Ini:", femaleVisits],
+                ["Total Pendapatan (Keseluruhan):", `"${formatCurrency(totalRevenue)}"`],
+                ["Shift Pagi:", todaySchedule.pagi || "-"],
+                ["Shift Sore:", todaySchedule.sore || "-"]
+            ];
+
+            const transactionHeader = ["Tanggal", "Tipe", "Nama", "Pendapatan"];
+            const transactionRows = transactions.map(t => [
+                t.date,
+                t.type,
+                `"${t.name.replace(/"/g, '""')}"`,
+                t.amount
+            ]);
+            
+            let csvContent = summaryData.map(e => e.join(",")).join("\n");
+            csvContent += "\n\n";
+            csvContent += "Detail Semua Transaksi\n";
+            csvContent += transactionHeader.join(",");
+            csvContent += "\n";
+            csvContent += transactionRows.map(row => row.join(",")).join("\n");
+
+            exportToCsv(`laporan_BKOM_${todayStr}.csv`, csvContent);
+        });
+
+        document.getElementById('export-whatsapp-btn').addEventListener('click', () => {
+            const currentHour = new Date().getHours();
+            let currentShift = null;
+            if (currentHour >= 8 && currentHour < 15) { currentShift = 'pagi'; } 
+            else if (currentHour >= 15 && currentHour < 21) { currentShift = 'sore'; }
+
+            if (!currentShift) {
+                alert('Laporan hanya bisa dibagikan saat jam kerja.');
+                return;
+            }
+            
+            const todayStr = getTodayDateString();
+            const hasCheckedIn = shiftCheckIns.some(ci => ci.date === todayStr && ci.shift === currentShift);
+
+            if (!hasCheckedIn) {
+                alert(`Petugas jaga Shift ${currentShift.charAt(0).toUpperCase() + currentShift.slice(1)} belum melakukan check-in.`);
+                return;
+            }
+
+            const now = new Date();
+            const todayVisitors = dailyVisitors.filter(v => v.visitDate === todayStr);
+            const todayCheckIns = checkIns.filter(ci => ci.date === todayStr);
+            const totalTodayVisitors = todayVisitors.length + todayCheckIns.length;
+
+            let maleVisits = 0;
+            let femaleVisits = 0;
+            todayVisitors.forEach(v => { if (v.gender === 'Laki-laki') maleVisits++; else if (v.gender === 'Perempuan') femaleVisits++; });
+            todayCheckIns.forEach(ci => {
+                const member = members.find(m => m.id === ci.memberId);
+                if (member) { if (member.gender === 'Laki-laki') maleVisits++; else if (member.gender === 'Perempuan') femaleVisits++; }
+            });
+
+            const todayDailyRevenue = todayVisitors.reduce((sum, v) => sum + v.price, 0);
+            const todayNewMembersTransactions = transactions.filter(t => t.date === todayStr && t.type === 'Pendaftaran Member');
+            const todayRenewalTransactions = transactions.filter(t => t.date === todayStr && t.type === 'Perpanjangan Member');
+            const todayNewMemberRevenue = todayNewMembersTransactions.reduce((sum, t) => sum + t.amount, 0);
+            const todayRenewalRevenue = todayRenewalTransactions.reduce((sum, t) => sum + t.amount, 0);
+            const todayMemberRevenue = todayNewMemberRevenue + todayRenewalRevenue;
+            const todayNewMembersCount = todayNewMembersTransactions.length;
+            const todayRenewalsCount = todayRenewalTransactions.length;
+
+            const todaySchedule = schedules.find(s => s.date === todayStr) || {};
+
+            let reportText = `*Laporan Harian BOKM*\n` +
+                             `Tanggal: ${formatDate(now)}\n` +
+                             `Jam: ${formatTime(now)}\n` +
+                             `-----------------------------------\n` +
+                             `*Petugas Jaga*\n` +
+                             `- Shift Pagi: ${todaySchedule.pagi || "-"}\n` +
+                             `- Shift Sore: ${todaySchedule.sore || "-"}\n` +
+                             `-----------------------------------\n` +
+                             `*Ringkasan Pengunjung Hari Ini*\n` +
+                             `- Total Semua Pengunjung: ${totalTodayVisitors}\n` +
+                             `- Total Non-Member: ${todayVisitors.length}\n` +
+                             `- Total Member Check-in: ${todayCheckIns.length}\n` +
+                             `- Total Laki-laki: ${maleVisits}\n` +
+                             `- Total Perempuan: ${femaleVisits}\n` +
+                             `-----------------------------------\n` +
+                             `*Ringkasan Pendapatan Hari Ini*\n` +
+                             `- Pendapatan Harian: ${formatCurrency(todayDailyRevenue)}\n` +
+                             `- Pendapatan Member: ${formatCurrency(todayMemberRevenue)}\n` +
+                             `-----------------------------------\n` +
+                             `*Ringkasan Member Hari Ini*\n` +
+                             `- Member Baru: ${todayNewMembersCount}\n` +
+                             `- Member Perpanjang: ${todayRenewalsCount}`;
+
+
+            const encodedText = encodeURIComponent(reportText);
+            window.open(`https://wa.me/?text=${encodedText}`, '_blank');
+        });
+
+        // --- Locker Management ---
+        const initializeLockers = () => { if (lockers.length === 0) { for (let i = 1; i <= TOTAL_LOCKERS; i++) lockers.push({ id: i, status: 'available', assignedToId: null, assignedToName: null, type: null }); saveAllData(); } };
+        const assignLocker = (lockerId, personId, personName, type) => { const locker = lockers.find(l => l.id == lockerId); if(locker) { locker.status = 'in-use'; locker.assignedToId = personId; locker.assignedToName = personName; locker.type = type; } };
+        const returnLocker = (lockerId) => {
+            const locker = lockers.find(l => l.id == lockerId);
+            if (locker) {
+                const personId = locker.assignedToId;
+                const personType = locker.type;
+
+                if (personType === 'Pengunjung') {
+                    const visitor = dailyVisitors.find(v => v.id === personId);
+                    if (visitor) { visitor.lockerReturned = true; }
+                } else if (personType === 'Member') {
+                    const member = members.find(m => m.id === personId);
+                    if (member) { member.lockerReturned = true; }
+                }
+
+                locker.status = 'available';
+                locker.assignedToId = null;
+                locker.assignedToName = null;
+                locker.type = null;
+                
+                saveAllData();
+                renderLockers();
+                renderDailyVisitors();
+                renderMembers(document.getElementById('search-member').value);
+
+                closeModal('lockerDetails');
+            }
+        };
+        document.getElementById('locker-grid').addEventListener('click', (e) => {
+            const item = e.target.closest('.locker-item'); if (!item) return;
+            const locker = lockers.find(l => l.id == item.dataset.id);
+            if (!locker || locker.status === 'available') return;
+            document.getElementById('locker-details-title').innerText = `Detail Loker ${locker.id}`;
+            document.getElementById('locker-details-content').innerHTML = `<p><strong>Status:</strong> Digunakan</p><p><strong>Oleh:</strong> ${locker.assignedToName} (${locker.assignedToId})</p><p><strong>Tipe:</strong> ${locker.type}</p><button id="return-locker-btn" class="w-full mt-4 bg-red-500 text-white py-2 rounded-lg">Kembalikan Loker</button>`;
+            openModal('lockerDetails');
+            document.getElementById('return-locker-btn').onclick = () => returnLocker(locker.id);
+        });
+        
+        // --- Event Listeners ---
+        const performCheckIn = (memberId) => {
+            const member = members.find(m => m.id === memberId);
+            checkIns.push({ date: getTodayDateString(), time: new Date().toISOString(), memberId });
+            saveAllData();
+
+            document.getElementById('splash-message').textContent = member.name;
+            openModal('splash');
+            setTimeout(() => {
+                closeModal('splash');
+            }, 2000);
+            
+            renderCheckInView(document.getElementById('search-check-in-member').value);
+        };
+        document.getElementById('add-member-btn').addEventListener('click', () => { document.getElementById('member-form').reset(); document.getElementById('modal-title').innerText = 'Tambah Member Baru'; document.getElementById('start-date').value = getTodayDateString(); populateLockerDropdowns(); openModal('member'); });
+        document.getElementById('add-visitor-btn').addEventListener('click', () => { document.getElementById('visitor-form').reset(); document.getElementById('visitor-modal-title').innerText = 'Tambah Pengunjung Harian'; document.getElementById('visitor-id').value = ''; populateLockerDropdowns(); openModal('visitor'); });
+        document.querySelectorAll('.cancel-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const modal = e.target.closest('.modal');
+                modal.classList.remove('is-open');
+                if (modal.id === 'superadmin-modal') {
+                    // Re-select the previously active tab if superadmin login is cancelled
+                    const activeTab = document.querySelector('.tab-button.active');
+                    if (activeTab && activeTab.id !== 'tab-set-schedule') {
+                        activeTab.click();
+                    } else {
+                        document.getElementById('tab-members').click();
+                    }
+                }
+            })
+        });
+        searchInput.addEventListener('input', e => renderMembers(e.target.value));
+        document.getElementById('search-check-in-member').addEventListener('input', e => renderCheckInView(e.target.value));
+        scheduleDatePicker.addEventListener('change', renderScheduleView);
+        visitorDatePicker.addEventListener('change', renderDailyVisitors);
+        reportDateStart.addEventListener('change', renderReports);
+        reportDateEnd.addEventListener('change', renderReports);
+        document.getElementById('clear-report-date-btn').addEventListener('click', () => {
+            reportDateStart.value = '';
+            reportDateEnd.value = '';
+            renderReports();
+        });
+
+        scheduleList.addEventListener('click', (e) => {
+            if (e.target.classList.contains('shift-checkin-btn')) {
+                const { date, shift, admin } = e.target.dataset;
+                if (shiftCheckIns.some(sc => sc.date === date && sc.shift === shift)) return;
+                shiftCheckIns.push({ date, shift, admin, time: new Date().toISOString() }); saveAllData(); renderScheduleView();
+            }
+        });
+        memberList.addEventListener('click', e => {
+            const target = e.target.closest('button'); if (!target) return; const id = target.dataset.id;
+            if (target.classList.contains('checkin-btn')) {
+                performCheckIn(id);
+            } else if (target.classList.contains('view-history-btn')) {
+                renderHistoryModal(id);
+            } else if (target.classList.contains('renew-btn')) {
+                const member = members.find(m => m.id === id); 
+                document.getElementById('renewal-member-name').textContent = member.name; 
+                document.getElementById('renewal-member-id').value = id; 
+                document.getElementById('renewal-price').textContent = formatCurrency(RENEWAL_PRICE);
+                openModal('renewal');
+            } else if (target.classList.contains('delete-btn')) {
+                const memberToDelete = members.find(m => m.id === id);
+                if (memberToDelete) {
+                    document.getElementById('confirm-delete-title').textContent = 'Konfirmasi Hapus Member';
+                    document.getElementById('delete-item-name').textContent = memberToDelete.name;
+                    document.getElementById('confirm-delete-btn').dataset.id = id;
+                    document.getElementById('confirm-delete-btn').dataset.type = 'member';
+                    openModal('confirmDelete');
+                }
+            } else if (target.classList.contains('edit-btn')) {
+                const member = members.find(m => m.id === id); document.getElementById('member-form').reset(); Object.keys(member).forEach(key => { const el = document.getElementById(`member-${key}`); if (el) el.value = member[key]; }); document.getElementById('member-locker').innerHTML = '<option value="">- Tidak Ganti Loker -</option>'; populateLockerDropdowns(); openModal('member');
+            } else if (target.classList.contains('return-member-locker-btn')) {
+                const memberId = target.dataset.memberId;
+                const lockerId = target.dataset.lockerId;
+                returnLocker(lockerId); 
+            }
+        });
+        document.getElementById('check-in-list-view').addEventListener('click', e => {
+            const target = e.target.closest('button');
+            if (target && target.classList.contains('checkin-view-btn')) {
+                performCheckIn(target.dataset.id);
+            }
+        });
+        visitorList.addEventListener('click', e => {
+            const target = e.target.closest('button'); if (!target) return;
+            const id = target.dataset.id;
+            if (target.classList.contains('details-btn')) {
+                const visitor = dailyVisitors.find(v => v.id === id);
+                if (visitor) {
+                    document.getElementById('details-title').innerText = `Detail Pengunjung: ${visitor.name}`;
+                    document.getElementById('details-content').innerHTML = `<p><strong>ID:</strong> ${visitor.id}</p><p><strong>No. HP:</strong> ${visitor.phone}</p><p><strong>Jenis Kelamin:</strong> ${visitor.gender}</p><p><strong>Alamat:</strong> ${visitor.address || '-'}</p><p><strong>Biaya:</strong> ${formatCurrency(visitor.price)}</p>`;
+                    openModal('details');
+                }
+            } else if (target.classList.contains('edit-visitor-btn')) {
+                const visitor = dailyVisitors.find(v => v.id === id);
+                document.getElementById('visitor-form').reset();
+                document.getElementById('visitor-modal-title').innerText = 'Edit Pengunjung Harian';
+                Object.keys(visitor).forEach(key => {
+                    const el = document.getElementById(`visitor-${key.replace('id', 'visitor-id')}`); // quick fix for id
+                    if(key === 'id') {
+                         document.getElementById('visitor-id').value = visitor[key];
+                    } else if (el) {
+                         el.value = visitor[key];
+                    }
+                });
+                populateLockerDropdowns();
+                document.getElementById('visitor-locker').value = visitor.lockerId || "";
+                openModal('visitor');
+            } else if (target.classList.contains('delete-visitor-btn')) {
+                const visitorToDelete = dailyVisitors.find(v => v.id === id);
+                 if (visitorToDelete) {
+                    document.getElementById('confirm-delete-title').textContent = 'Konfirmasi Hapus Pengunjung';
+                    document.getElementById('delete-item-name').textContent = visitorToDelete.name;
+                    document.getElementById('confirm-delete-btn').dataset.id = id;
+                    document.getElementById('confirm-delete-btn').dataset.type = 'visitor';
+                    openModal('confirmDelete');
+                }
+            } else if (target.classList.contains('return-visitor-locker-btn')) {
+                const visitorId = target.dataset.visitorId;
+                const lockerId = target.dataset.lockerId;
+                returnLocker(lockerId); 
+            }
+        });
+        tabs.forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                if(tab.classList.contains('disabled')) return;
+                
+                if (tab.id === 'tab-set-schedule') {
+                    openModal('superAdmin');
+                    return;
+                }
+
+                tabs.forEach(t => t.classList.remove('active', 'border-blue-500'));
+                tab.classList.add('active', 'border-blue-500');
+                document.querySelectorAll('main > div[id^="view-"]').forEach(v => v.classList.add('hidden'));
+                document.getElementById(tab.id.replace('tab-', 'view-')).classList.remove('hidden');
+                
+                if (tab.id === 'tab-lockers') renderLockers(); 
+                if (tab.id === 'tab-reports') renderReports();
+                if (tab.id === 'tab-check-in') renderCheckInView();
+            });
+        });
+
+        document.getElementById('reset-schedule-btn').addEventListener('click', () => {
+            openModal('confirmReset');
+        });
+
+        document.getElementById('cancel-reset-btn').addEventListener('click', () => {
+            closeModal('confirmReset');
+        });
+
+        document.getElementById('confirm-reset-btn').addEventListener('click', () => {
+            schedules = [];
+            shiftCheckIns = [];
+            saveAllData();
+            renderScheduleView();
+            closeModal('confirmReset');
+        });
+
+        document.getElementById('confirm-delete-btn').addEventListener('click', (e) => {
+            const id = e.target.dataset.id;
+            const type = e.target.dataset.type || 'member';
+
+            if (type === 'member') {
+                members = members.filter(m => m.id !== id);
+                transactions = transactions.filter(t => t.id !== id || (t.type !== 'Pendaftaran Member' && t.type !== 'Perpanjangan Member'));
+                checkIns = checkIns.filter(ci => ci.memberId !== id);
+                renderMembers(searchInput.value);
+            } else if (type === 'visitor') {
+                dailyVisitors = dailyVisitors.filter(v => v.id !== id);
+                transactions = transactions.filter(t => t.id !== id || t.type !== 'Pengunjung Harian');
+                renderDailyVisitors();
+            }
+            
+            saveAllData();
+            closeModal('confirmDelete');
+        });
+
+
+        // --- INITIALIZATION ---
+        const init = () => {
+            const updateTime = () => { document.getElementById('current-datetime').textContent = new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }); };
+            updateTime(); setInterval(updateTime, 30000);
+            
+            initializeLockers();
+            const storedLogin = sessionStorage.getItem('gymIsLoggedIn');
+
+            if(storedLogin) { 
+                isLoggedIn = true; 
+                loginOverlay.classList.remove('is-open'); 
+                logoutBtn.classList.remove('hidden'); 
+            }
+            
+            updateUIAfterLogin();
+            scheduleDatePicker.value = getTodayDateString();
+            visitorDatePicker.value = getTodayDateString();
+            reportDateStart.value = getTodayDateString();
+            reportDateEnd.value = getTodayDateString();
+            renderMembers(); renderDailyVisitors(); renderScheduleView(); renderReports(); renderLockers();
+        };
+        
+        init();
+    });
+    </script>
+</body>
+</html>
