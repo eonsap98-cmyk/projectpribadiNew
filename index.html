@@ -141,9 +141,7 @@
                             <i class="fas fa-plus mr-2"></i> Tambah Member Baru
                         </button>
                     </div>
-                    <div class="overflow-x-auto"><table class="w-full text-sm text-left text-gray-500"><thead class="text-xs text-gray-700 uppercase bg-gray-100"><tr><th class="px-6 py-3">ID</th><th class="px-6 py-3">Nama</th><th class="px-6 py-3">Paket</th><th class="px-6 py-3">Tgl Selesai</th><th class="px-6 py-3">Status</th>
-                        <th class="px-6 py-3">Metode Bayar</th>
-                        <th class="px-6 py-3 text-center">Loker</th><th class="px-6 py-3 text-center">Aksi</th></tr></thead><tbody id="member-list"></tbody></table></div>
+                    <div class="overflow-x-auto"><table class="w-full text-sm text-left text-gray-500"><thead class="text-xs text-gray-700 uppercase bg-gray-100"><tr><th class="px-6 py-3">ID</th><th class="px-6 py-3">Nama</th><th class="px-6 py-3">Paket</th><th class="px-6 py-3">Tgl Selesai</th><th class="px-6 py-3">Status</th><th class="px-6 py-3">Metode Bayar</th><th class="px-6 py-3 text-center">Loker</th><th class="px-6 py-3 text-center">Aksi</th></tr></thead><tbody id="member-list"></tbody></table></div>
                 </div>
             </div>
 
@@ -236,11 +234,9 @@
                      <div class="bg-white p-4 sm:p-6 rounded-lg shadow-lg">
                         <div class="flex flex-col sm:flex-row justify-between items-center mb-4 gap-4">
                             <h2 class="text-xl font-semibold text-gray-700">Laporan Pendapatan</h2>
-                            <div class="flex flex-wrap items-center gap-2">
-                               <label for="report-date-start" class="text-sm font-medium">Dari Tanggal:</label>
-                               <input type="date" id="report-date-start" class="border rounded-lg p-2 text-sm">
-                               <label for="report-date-end" class="text-sm font-medium">s/d</label>
-                               <input type="date" id="report-date-end" class="border rounded-lg p-2 text-sm">
+                            <div class="flex items-center gap-2">
+                               <label for="report-date-picker" class="text-sm font-medium">Tampilkan Tanggal:</label>
+                               <input type="date" id="report-date-picker" class="border rounded-lg p-2 text-sm">
                                <button id="clear-report-date-btn" class="bg-gray-500 hover:bg-gray-600 text-white text-sm py-2 px-3 rounded-lg" title="Tampilkan Semua Tanggal"><i class="fas fa-times"></i></button>
                            </div>
                         </div>
@@ -372,8 +368,7 @@
         const tabs = document.querySelectorAll('.tab-button');
         const protectedTabs = ['tab-members', 'tab-check-in', 'tab-visitors', 'tab-lockers', 'tab-set-schedule'];
         const superAdminForm = document.getElementById('superadmin-form');
-        const reportDateStart = document.getElementById('report-date-start');
-        const reportDateEnd = document.getElementById('report-date-end');
+        const reportDatePicker = document.getElementById('report-date-picker');
 
         const modals = { member: document.getElementById('member-modal'), visitor: document.getElementById('visitor-modal'), details: document.getElementById('details-modal'), renewal: document.getElementById('renewal-modal'), lockerDetails: document.getElementById('locker-details-modal'), superAdmin: document.getElementById('superadmin-modal'), confirmReset: document.getElementById('confirm-reset-modal'), history: document.getElementById('history-modal'), confirmDelete: document.getElementById('confirm-delete-modal'), splash: document.getElementById('splash-modal') };
 
@@ -576,25 +571,13 @@
             const transactionList = document.getElementById('transaction-list');
             const totalRevenueLabel = document.getElementById('total-revenue-label');
             transactionList.innerHTML = '';
-            const startDate = reportDateStart.value;
-            const endDate = reportDateEnd.value;
+            const selectedDate = reportDatePicker.value;
             
             let filteredTransactions;
-
-            if (startDate && endDate) {
-                // Range selection
-                filteredTransactions = transactions.filter(t => t.date >= startDate && t.date <= endDate);
-                totalRevenueLabel.textContent = 'Total Pendapatan (Rentang):';
-            } else if (startDate) {
-                // Single day selection (only start date)
-                filteredTransactions = transactions.filter(t => t.date === startDate);
-                totalRevenueLabel.textContent = 'Total Pendapatan (Tanggal Dipilih):';
-            } else if (endDate) {
-                // Single day selection (only end date)
-                filteredTransactions = transactions.filter(t => t.date === endDate);
+            if (selectedDate) {
+                filteredTransactions = transactions.filter(t => t.date === selectedDate);
                 totalRevenueLabel.textContent = 'Total Pendapatan (Tanggal Dipilih):';
             } else {
-                // All time
                 filteredTransactions = [...transactions].sort((a, b) => new Date(b.date) - new Date(a.date));
                 totalRevenueLabel.textContent = 'Total Pendapatan (Semua Tanggal):';
             }
@@ -1065,11 +1048,9 @@
         document.getElementById('search-check-in-member').addEventListener('input', e => renderCheckInView(e.target.value));
         scheduleDatePicker.addEventListener('change', renderScheduleView);
         visitorDatePicker.addEventListener('change', renderDailyVisitors);
-        reportDateStart.addEventListener('change', renderReports);
-        reportDateEnd.addEventListener('change', renderReports);
+        reportDatePicker.addEventListener('change', renderReports);
         document.getElementById('clear-report-date-btn').addEventListener('click', () => {
-            reportDateStart.value = '';
-            reportDateEnd.value = '';
+            reportDatePicker.value = '';
             renderReports();
         });
 
@@ -1122,7 +1103,7 @@
                 const visitor = dailyVisitors.find(v => v.id === id);
                 if (visitor) {
                     document.getElementById('details-title').innerText = `Detail Pengunjung: ${visitor.name}`;
-                    document.getElementById('details-content').innerHTML = `<p><strong>ID:</strong> ${visitor.id}</p><p><strong>No. HP:</strong> ${visitor.phone}</p><p><strong>Jenis Kelamin:</strong> ${visitor.gender}</p><p><strong>Alamat:</strong> ${visitor.address || '-'}</p><p><strong>Biaya:</strong> ${formatCurrency(visitor.price)}</p>`;
+                    document.getElementById('details-content').innerHTML = `<p><strong>ID:</strong> ${visitor.id}</p><p><strong>No. HP:</strong> ${visitor.phone}</p><p><strong>Jenis Kelamin:</strong> ${visitor.gender}</p><p><strong>Alamat:</strong> ${visitor.address || '-'}</p><p><strong>Biaya:</strong> ${formatCurrency(visitor.price)}</p><p><strong>Metode Bayar:</strong> ${visitor.paymentMethod || 'N/A'}</p>`;
                     openModal('details');
                 }
             } else if (target.classList.contains('edit-visitor-btn')) {
@@ -1228,8 +1209,7 @@
             updateUIAfterLogin();
             scheduleDatePicker.value = getTodayDateString();
             visitorDatePicker.value = getTodayDateString();
-            reportDateStart.value = getTodayDateString();
-            reportDateEnd.value = getTodayDateString();
+            reportDatePicker.value = getTodayDateString();
             renderMembers(); renderDailyVisitors(); renderScheduleView(); renderReports(); renderLockers();
         };
         
