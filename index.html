@@ -388,7 +388,7 @@
         const getTodayDateString = () => new Date().toISOString().split('T')[0];
         const openModal = (name) => modals[name].classList.add('is-open');
         const closeModal = (name) => modals[name].classList.remove('is-open');
-        const calculateEndDate = (start, months) => { const d = new Date(start); d.setMonth(d.getMonth() + parseInt(months)); return d; };
+        const calculateEndDate = (start, months) => { const d = new Date(start); d.setMonth(d.getMonth() + parseInt(months)); d.setDate(d.getDate() - 1); return d; };
         const exportToCsv = (filename, csvContent) => {
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
@@ -1028,7 +1028,7 @@
             renderCheckInView(document.getElementById('search-check-in-member').value);
         };
         document.getElementById('add-member-btn').addEventListener('click', () => { document.getElementById('member-form').reset(); document.getElementById('modal-title').innerText = 'Tambah Member Baru'; document.getElementById('start-date').value = getTodayDateString(); populateLockerDropdowns(); openModal('member'); });
-        document.getElementById('add-visitor-btn').addEventListener('click', () => { document.getElementById('visitor-form').reset(); document.getElementById('visitor-modal-title').innerText = 'Tambah Pengunjung Harian'; document.getElementById('visitor-id').value = ''; populateLockerDropdowns(); openModal('visitor'); });
+        document.getElementById('add-visitor-btn').addEventListener('click', () => { document.getElementById('visitor-form').reset(); populateLockerDropdowns(); openModal('visitor'); });
         document.querySelectorAll('.cancel-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const modal = e.target.closest('.modal');
